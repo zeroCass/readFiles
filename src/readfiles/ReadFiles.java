@@ -50,79 +50,65 @@ public class ReadFiles {
     
     public static void main(String[] args) throws IOException, InterruptedException {
         
-       //Recebe o diretorio dos arquivos
-        //File dir = new File("C:\\Users\\mayll\\OneDrive\\Documentos\\Lab1_OAC\\videoFiles\\frames\\S");
-        //Cria o novo file que ira receber os dados
-        //File newFile = new File("C:\\Users\\mayll\\OneDrive\\Documentos\\Lab1_OAC\\videoFiles\\frames\\S\\bigS.s");
-        //toFileS toS = new toFileS(dir,newFile);
-        
-        
-        
-//    ProcessBuilder processBuilder = new ProcessBuilder("C:/Windows/System32/cmd.exe");
-//    processBuilder.directory(new File("C:\\Users\\mateu\\OneDrive\\Documentos\\OAC\\Lab 1\\Video Files\\frames"));
-
-    // -- Linux --
-
-    // Run a shell command
-    //processBuilder.command("bash", "-c", "ls /home/mkyong/");
-
-    // Run a shell script
-    //processBuilder.command("path/to/hello.sh");
-
-    // -- Windows --
-
-    // Run a command
+//        File dir = new File("C:\\Users\\mateu\\OneDrive\\Documentos\\OAC\\Lab 1\\Video Files\\frames");
+//        for (File file : dir.listFiles()) {
+//
+//            if(file.getName().contains(".bmp")) {
+//                String fileName = file.getName().replace(".bmp", "");
+//                System.out.println(fileName);
+//                String result = executeCommand("cd C:\\Users\\mateu\\OneDrive\\Documentos\\OAC\\Lab 1\\Video Files\\frames && bmp2oac3.exe "+ fileName + ".bmp");
+//                executeCommand("cd C:\\Users\\mateu\\OneDrive\\Documentos\\OAC\\Lab 1\\Video Files\\frames && del /f " + fileName + ".mif");
+//                executeCommand("cd C:\\Users\\mateu\\OneDrive\\Documentos\\OAC\\Lab 1\\Video Files\\frames && del /f " + fileName + ".data");
+//                System.out.println(result);
+//
+//            }
+//
+//        }
     
-//    Process process = processBuilder.start();
-//    BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-    File dir = new File("C:\\Users\\mateu\\OneDrive\\Documentos\\OAC\\Lab 1\\Video Files\\frames");
-    for (File file : dir.listFiles()) {
-
-        if(file.getName().contains(".bmp")) {
-            String fileName = file.getName().replace(".bmp", "");
-            System.out.println(fileName);
-            String result = executeCommand("cd C:\\Users\\mateu\\OneDrive\\Documentos\\OAC\\Lab 1\\Video Files\\frames && bmp2oac3.exe "+ fileName + ".bmp");
-            executeCommand("cd C:\\Users\\mateu\\OneDrive\\Documentos\\OAC\\Lab 1\\Video Files\\frames && del /f " + fileName + ".mif");
-            executeCommand("cd C:\\Users\\mateu\\OneDrive\\Documentos\\OAC\\Lab 1\\Video Files\\frames && del /f " + fileName + ".data");
-            System.out.println(result);
-            
-            
-//            try {
-//                //single execution
-//                p_stdin.write("cd C:\\Users\\mayll\\OneDrive\\Documentos\\Lab1_OAC\\videoFiles\\frames\\teste");
-//                p_stdin.newLine();
-//                p_stdin.write("bmp2oac3.exe " + fileName + ".bmp");
-//                p_stdin.newLine();
-//                p_stdin.write("del /f " + fileName + ".mif");
-//                p_stdin.newLine();
-//                p_stdin.flush();
-//            }
-//            catch (IOException e) {
-//                System.out.println(e);
-//            }
+        ProcessBuilder builder = new ProcessBuilder("cmd", "c");
+        builder.directory(new File(System.getProperty("user.dir")));
         
+        //get the current directory 
+        System.out.println("Builder path: " + builder.directory());
+        
+        //Get the class path (used in jar file exection)
+        //System.out.println("Path: " + ReadFiles.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+        
+        
+        //check if the dir frames exists, if dont, then creates
+        File framesDir = new File(builder.directory() + "//frames");
+        if (!framesDir.exists()) {
+            framesDir.mkdirs();
+        }
+           
+        String ffmpeg = null;
+        String bmp2oac3 = null;
+        
+        System.out.println("Command-line arguments");
+        for(String arg : args) {
+            if (arg.contains("ffmpeg"))
+                ffmpeg = arg;
+            else if (arg.contains("bmp2oac3"))
+                bmp2oac3 = arg;
+            //System.out.println(arg);
         }
         
+        //verifica se os parametros são validos
+        if((bmp2oac3 == null) || (ffmpeg == null)) {
+            System.out.println("Nenhum comando valido");
+            System.exit(1);
+        }
+            
+            
         
-        
-        //processBuilder.command("cmd.exe", "/c", "cd C:\\Users\\mayll\\OneDrive\\Documentos\\Lab1_OAC\\videoFiles\\frames\\imagens && bmp2oac3.exe " + fileName);
-    }
-//    Scanner s = new Scanner( process.getInputStream() );
-//    while (s.hasNext())
-//    {
-//        System.out.println( s.next() );
-//    }
-//       s.close();
-//    p_stdin.write("exit");
-//    p_stdin.newLine();
-//    p_stdin.flush();
-//    int exit = process.waitFor();
-//    System.out.println("Exit status: " + exit);
+        System.out.println("FFMPEG: " + ffmpeg);
+        System.out.println("BMP2OAC3: " + bmp2oac3);
 
-        
-
-        
-        
     }
+    
+    
+    
+    
+    
     
 }

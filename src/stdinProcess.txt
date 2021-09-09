@@ -1,0 +1,20 @@
+Para escrever comandos ao ProcessBuilder, é necessaário criar um BufferWriter na qual receber o OutputStream do proceess(ProcessBuilder.start())
+Esse output é o buffer é o local que será enviado os dados do BufferWriter
+
+Ex:
+Process process = processBuilder.start();
+BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+
+Através desse esse objeto é que será escrito os comandos -> 
+p_stdin.write("del /f " + fileName + ".mif");
+//                p_stdin.newLine();
+//                p_stdin.flush();
+
+O flush() força a execução do mesmo
+
+Run commands in Windows:
+ builder = new ProcessBuilder("cmd.exe", "/c", command);
+Run commands in Linux
+//processBuilder.command("path/to/hello.sh");
+
+creatNewFile(); -> retorna se o file já existe
