@@ -14,6 +14,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -64,7 +67,7 @@ public class ReadFiles {
                     binFile.write(lerbyte);
                     //System.out.println(file.getName());
                 } 
-                System.out.println("Arquivo " + file.getName() + " unificado");
+                System.out.println(file.getName() + " unified file");
                 is.close();
             }              
         }
@@ -88,10 +91,14 @@ public class ReadFiles {
         
       //check if the dir frames exists, if dont, then creates
         File framesDir = new File(directory + "//frames");
+        File binFolder = new File(framesDir.getPath() + "//binFolder"); //the new folder where the files .bin will be storage
         if (!framesDir.exists()) {
                 framesDir.mkdirs();
             }
-           
+        
+        
+
+        //variables
         String ffmpeg = null;
         String bmp2oac3 = null;
         String toFileBin = null;
@@ -99,14 +106,17 @@ public class ReadFiles {
         File fileBin = null;
         
         
-        System.out.println("Command-line arguments");
+        
+//        System.out.println("Command-line arguments");
         for(String arg : args) {
+            
             if (arg.contains("ffmpeg")) {
                 ffmpeg = arg;
                 int idxEnd = arg.indexOf(".mp4") + ".mp4".length()-1;
                 //System.out.println(idxEnd);
                 int idxBegin = 0;
                 String line = "";
+                //get the initial index of the name of the video
                 for (int c = idxEnd; c > 0; c--) {
                     //System.out.println("Char: " + arg.charAt(c));
                     if ((arg.charAt(c)) == ' ') {
@@ -116,12 +126,13 @@ public class ReadFiles {
                     }
                 }
                 
+                //creates the file video 
                 String videoName = arg.substring(idxBegin, idxEnd+1);
                 videoFile = new File(directory + "//" + videoName);
                 System.out.println("Video name:" + videoFile.getName());
                 System.out.println(videoFile.getName());
                 if(!videoFile.isFile()) {
-                    System.out.println("Video nao encontrado");
+                    System.out.println("Video not found");
                     System.exit(1);
                 }
                 //System.out.println("Video name:  " + file.getName());
@@ -130,8 +141,10 @@ public class ReadFiles {
             else if (arg.contains("bmp2oac3")) {
                 bmp2oac3 = arg;
                 File file = new File(directory + "//" + bmp2oac3);
-                if (!file.isFile()) {
-                    System.out.println("Arquivo bmp2oac3.exe Nao existe");
+                File file2 = new File(framesDir + "//" + bmp2oac3);
+                System.out.println(file2.getPath());
+                if (!file.isFile() && !file2.isFile()) {
+                    System.out.println("File bmp2oac3.exe not found");
                     System.exit(1);
                 }
             }
@@ -151,7 +164,7 @@ public class ReadFiles {
                     }
                 }
                 String bigBin = arg.substring(idxBegin, idxEnd+1);
-                System.out.println("Nome do arquivo a ser gerado: " + bigBin);
+                System.out.println("Name of the file to be generated: " + bigBin);
                 fileBin = new File(framesDir + "//" + bigBin);
                 
             }
@@ -159,14 +172,15 @@ public class ReadFiles {
             //System.out.println(arg);
         }
         
-        //verifica se os parametros são validos
+        //check if the parameters are valid
         if((bmp2oac3 == null) && (ffmpeg == null) && (toFileBin == null)) {
-            System.out.println("Nenhum comando valido");
+            System.out.println("No valid command");
             System.exit(1);
         }
         
         
         
+        //execute the command to convert a video to frames
         if (ffmpeg != null) {
             String output = executeCommand(directory, ffmpeg);
             System.out.println(output);
@@ -175,9 +189,21 @@ public class ReadFiles {
         
         
         
-        
+        //execute command to convert a file.bmp to .bin, .data and .mif
         if (bmp2oac3 != null) {
+            File oac = new File(directory + "//" + bmp2oac3);
             
+            
+            //check if the file bmp2oac doesnt exists in frames folder
+            //if dont, move the file 
+            if (!(new File(framesDir.getPath() + "//" + bmp2oac3).exists())) 
+                oac.renameTo(new File(framesDir.getPath() + "//" + bmp2oac3)); //move the oac file to frames folder
+            
+
+            System.out.println("File bmp2oac3.exe moved to frames dir");
+            //System.exit(0);
+            
+            //execute command to convert file to file 
             for (File file : framesDir.listFiles()) {
                 
                 if (file.getName().contains(".bmp")) {
@@ -187,27 +213,39 @@ public class ReadFiles {
                 
             }
             
+            //delete useless file genereted
             for (File file : framesDir.listFiles()) {
                 
                 if (file.getName().contains(".data")) {
                     executeCommand(framesDir, "del /f " + file.getName());
-                    System.out.println("Arquivo" + file.getName() + " Excluido");
+                    System.out.println("File" + file.getName() + " deleted");
                 }
                 
                 if (file.getName().contains(".mif")) {
                     executeCommand(framesDir, "del /f " + file.getName());
-                    System.out.println("Arquivo" + file.getName() + " Excluido");
+                    System.out.println("File" + file.getName() + " deleted");
                 }
                 
+            }
+            
+            //move all .bin to one folder to keep organized
+            //File binFolder = new File(framesDir.getPath() + "//binFolder"); //the new folder where the file will be storage
+            binFolder.mkdirs();
+            for (File file : framesDir.listFiles()) {
+                
+                if(file.getName().contains(".bin")) {
+                    file.renameTo(new File(binFolder.getPath() + "//" + file.getName()));
+                    System.out.println(file.getName() + "moved to binFilder");
+                }
             }
             
         }
         
         
         
-        
+        //execute command to gerenete one file .bin
         if (toFileBin != null) {
-            toFileBin(framesDir, fileBin);
+            toFileBin(binFolder, fileBin);
         }
         
         
